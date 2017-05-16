@@ -1,0 +1,11 @@
+version: '2'
+services:
+    metrics-postgresql:
+        image: postgres:9.6.2
+        # volumes:
+        #     - ~/volumes/jhipster/metrics/postgresql/:/var/lib/postgresql/
+        environment:
+            - POSTGRES_USER=metrics
+            - POSTGRES_PASSWORD=
+        ports:
+            - 5432:5432

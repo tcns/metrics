@@ -1,0 +1,53 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="tignatchenko (generated)" id="1493126367028-1">
+        <createTable tableName="chat_state">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data" type="VARCHAR(255)"/>
+            <column name="step" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tignatchenko (generated)" id="1493126367028-2">
+        <createTable tableName="chat_user">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="chat_userPK"/>
+            </column>
+            <column name="telegram_chat_id" type="BIGINT"/>
+            <column name="telegram_username" type="VARCHAR(255)"/>
+            <column name="ya_token" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tignatchenko (generated)" id="1493126367028-3">
+        <createTable tableName="metric">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="metricPK"/>
+            </column>
+            <column name="ask_time" type="VARCHAR(255)"/>
+            <column name="avg_check" type="FLOAT"/>
+            <column name="clear_income" type="INT"/>
+            <column name="click_price" type="FLOAT"/>
+            <column name="goal_id" type="VARCHAR(255)"/>
+            <column name="metric_name" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="rent" type="FLOAT"/>
+            <column name="report_time" type="VARCHAR(255)"/>
+            <column name="sale_conversion" type="FLOAT"/>
+            <column name="site_conversion" type="FLOAT"/>
+            <column name="chat_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tignatchenko (generated)" id="1493126367028-4">
+        <addPrimaryKey columnNames="id" constraintName="chat_statePK" tableName="chat_state"/>
+    </changeSet>
+    <changeSet author="tignatchenko (generated)" id="1493126367028-5">
+        <addForeignKeyConstraint baseColumnNames="chat_user_id" baseTableName="metric" constraintName="FK3h23gwkq696qx73joxkstbxm0" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="chat_user"/>
+    </changeSet>
+    <changeSet author="tignatchenko (generated)" id="1493126367028-6">
+        <dropUniqueConstraint constraintName="CONSTRAINT_7" tableName="JHI_SOCIAL_USER_CONNECTION"/>
+    </changeSet>
+    <changeSet author="tignatchenko (generated)" id="1493126367028-7">
+        <dropUniqueConstraint constraintName="CONSTRAINT_71" tableName="JHI_SOCIAL_USER_CONNECTION"/>
+    </changeSet>
+</databaseChangeLog>
