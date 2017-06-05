@@ -6,7 +6,7 @@ package ru.cedra.metrics.domain;
 public class Commands {
     public static final String START = "/start";
 
-    public static final String UPDATE_TOKEN = "/update-token";
+    public static final String UPDATE_TOKEN = "/updatetoken";
 
     public static final String ADD_METRIC = "/metricadd";
 
@@ -16,7 +16,11 @@ public class Commands {
 
     public static final String METRIC_LIST = "/metriclist";
 
+    public static final String METRIC_STATS = "/metricstats";
+
     public static final String DEALS = "/deals";
+
+    public static final String MAIN = "/menu";
 
     public static final String DEALS_EDIT = "/dealsedit-";
 
@@ -25,6 +29,8 @@ public class Commands {
     public static final String DELETE_ONE_METRIC = "/deletemetric-";
 
     public static final String EDIT_ONE_METRIC = "/editmetric-";
+
+    public static final String STAT_ONE_METRIC = "/statmetric-";
 
     public static final String EDIT_ONE_PARAM = "/editparam-";
 

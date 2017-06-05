@@ -128,3 +128,5 @@ jhipster:
 # ===================================================================
 
 application:
+    bot-token: 387695455:AAFp_bpa4Hw0fkDJDsaNzj8f62JfN5DCVBU
+    bot-username: TestMetricReportBot

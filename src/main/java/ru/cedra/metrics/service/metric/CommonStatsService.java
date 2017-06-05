@@ -7,7 +7,9 @@ import ru.cedra.metrics.domain.Metric;
 import ru.cedra.metrics.repository.CommonStatsRepository;
 import ru.cedra.metrics.repository.MetricRepository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,9 +40,10 @@ public class CommonStatsService {
         } else {
             commonStats.setDeals(0);
             commonStats.setCalls(0);
+            commonStats.setGoalAchievements(0);
             commonStats.setClickCost(0.0f);
             commonStats.setBudget(0.0f);
-            commonStats.setDate(java.sql.Date.valueOf(LocalDate.now()));
+            commonStats.setDate(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
             commonStats.setMetric(metric);
         }
         if (updateRemote) {
@@ -63,8 +66,12 @@ public class CommonStatsService {
         Metric metric = metricRepository.findOne(metricId);
 
         LocalDate today = LocalDate.now();
-        LocalDate metricFromDate = metric.getReportFromDate().toLocalDate();
+        LocalDate metricFromDate = metric.getReportFromDate().toInstant().atZone(
+            ZoneId.systemDefault()).toLocalDate();
         long daysDiff = Math.min(30, Math.abs(ChronoUnit.DAYS.between(today, metricFromDate)));
+        if (daysDiff == 0) {
+            daysDiff = 1;
+        }
 
         LocalDate from = today.minusDays(daysDiff);
 
@@ -80,8 +87,8 @@ public class CommonStatsService {
         int dayGoalVisits = (int)Math.ceil((float)metric.getMonthCount() / 30);
         int dayGoalDeals = (int)Math.ceil((float)metric.getMonthDeals() / 30);
 
-        int periodVisits = monthStats.stream().mapToInt(CommonStats::getVisits).sum();
-        int periodDeals = monthStats.stream().mapToInt(CommonStats::getDeals).sum();
+        int periodVisits = monthStats.stream().mapToInt(a -> a.getVisits() == null ? 0 : a.getVisits()).sum();
+        int periodDeals = monthStats.stream().mapToInt(a -> a.getDeals() == null ? 0 : a.getDeals()).sum();
 
         sb.append(String.format("Цель за месяц: %d посещений, %d сделок " +
                                     "при средней цене клика %.1f",
@@ -97,7 +104,7 @@ public class CommonStatsService {
                                 todayStats.getVisits() == 0 ? 0f :
                                 ((float)todayStats.getGoalAchievements() /
                                     todayStats.getVisits() * 100),
-                                metric.getSiteConversion()))
+                                metric.getSiteConversion() * 100))
           .append("\n")
           .append(String.format("Конверсия отдела продаж  %,.2f%%",
                                 todayStats.getCalls() == 0 ? 0f :

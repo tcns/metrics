@@ -22,6 +22,9 @@ import ru.cedra.metrics.service.util.TaskUtil;
 import ru.metrika4j.entity.Counter;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +103,6 @@ public class MetricService {
             editType = Commands.DEALS_EDIT_FINAL;
             try {
                 metricId = Long.parseLong(chatState.getData().substring(Commands.DEALS_EDIT_FINAL
-
                                                                             .length()));
             } catch (Exception ex){}
         } else {
@@ -117,10 +119,10 @@ public class MetricService {
                 case ChatStates.NAME_STEP: metric.setName(input); break;
                 case ChatStates.GOAL_STEP: metric.setGoalId(input); break;
                 case ChatStates.INCOME_STEP: metric.setClearIncome(Integer.parseInt(input)); break;
-                case ChatStates.RENT_STEP: metric.setRent(Float.parseFloat(input)); break;
-                case ChatStates.SALE_CONVERSION_STEP: metric.setSaleConversion(Float.parseFloat(input)); break;
+                case ChatStates.RENT_STEP: metric.setRent(Float.parseFloat(input) / 100.0f); break;
+                case ChatStates.SALE_CONVERSION_STEP: metric.setSaleConversion(Float.parseFloat(input) / 100.0f); break;
                 case ChatStates.AVG_CHECK_STEP: metric.setAvgCheck(Float.parseFloat(input)); break;
-                case ChatStates.SITE_CONVERSION_STEP: metric.setSiteConversion(Float.parseFloat(input)); break;
+                case ChatStates.SITE_CONVERSION_STEP: metric.setSiteConversion(Float.parseFloat(input) / 100.0f); break;
                 case ChatStates.CLICK_PRICE_STEP: metric.setClickPrice(Float.parseFloat(input)); break;
                 case ChatStates.ASK_TIME_STEP:
                     Integer time = Integer.parseInt(input);
@@ -131,6 +133,13 @@ public class MetricService {
                     Integer timeReport = Integer.parseInt(input);
                     if (timeReport < 0 || timeReport > 23) throw  new Exception();
                     metric.setReportTime(input);
+                    break;
+                case  ChatStates.CAMPAIGNS_IDS:
+                    String[] ids = input.split(" ");
+                    for (String id : ids) {
+                        Integer.parseInt(id.trim());
+                    }
+                    metric.setCampainIds(input);
                     break;
                 case ChatStates.DEALS_EDIT:
                     String[] callsAndDeals = input.split(" ");
@@ -152,7 +161,7 @@ public class MetricService {
             chatStateService.updateChatStep(0, chatId);
             metric.setMonthDeals(calcService.calcMonthDeals(metric));
             if (!isEdit) {
-                metric.setReportFromDate(new Date(new java.util.Date().getTime()));
+                metric.setReportFromDate(Timestamp.valueOf(LocalDateTime.now()));
             }
             metric.setMonthCount(calcService.calcMonthVisits(
                 metric.getMonthDeals(),
@@ -192,6 +201,15 @@ public class MetricService {
                 .setChatId(chatId)
                 .setText(metricDefinition);
             return sendMessage;
+    }
+
+    public SendMessage getMetricReportNow (Long chatId, Long metricId) {
+        Metric metric = metricRepository.findOne(metricId);
+        String report = commonStatsService.getReport(metric.getId());
+        SendMessage sendMessage = new SendMessage()
+            .setChatId(chatId)
+            .setText(report);
+        return sendMessage;
     }
 
     public SendMessage getMetricList(Long chatId, String command) {

@@ -123,7 +123,5 @@ jhipster:
 # ===================================================================
 
 application:
-    bot-token: 320152093:AAGOmz1GnJfE7pOpqO2BpnrpXw-5R6zvk0s
-    bot-username: MetricReportBot
     ya-client-id: 9650892c566a41808c08231a6625fd49
     ya-client-secret: 648be287ef17418c8aad156fbf865e38

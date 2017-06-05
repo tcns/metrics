@@ -44,10 +44,4 @@
     <changeSet author="tignatchenko (generated)" id="1493126367028-5">
         <addForeignKeyConstraint baseColumnNames="chat_user_id" baseTableName="metric" constraintName="FK3h23gwkq696qx73joxkstbxm0" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="chat_user"/>
     </changeSet>
-    <changeSet author="tignatchenko (generated)" id="1493126367028-6">
-        <dropUniqueConstraint constraintName="CONSTRAINT_7" tableName="JHI_SOCIAL_USER_CONNECTION"/>
-    </changeSet>
-    <changeSet author="tignatchenko (generated)" id="1493126367028-7">
-        <dropUniqueConstraint constraintName="CONSTRAINT_71" tableName="JHI_SOCIAL_USER_CONNECTION"/>
-    </changeSet>
 </databaseChangeLog>

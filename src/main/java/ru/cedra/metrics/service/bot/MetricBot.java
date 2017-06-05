@@ -64,6 +64,9 @@ public class MetricBot extends TelegramLongPollingBot {
             } else if (callbackData.startsWith(Commands.DEALS_EDIT)) {
                 message = metricService.editDeals(chatId,
                                                   Long.parseLong(callbackData.substring(Commands.DEALS_EDIT.length())));
+            } else if (callbackData.startsWith(Commands.STAT_ONE_METRIC)) {
+                message = metricService.getMetricReportNow(chatId,
+                                                  Long.parseLong(callbackData.substring(Commands.STAT_ONE_METRIC.length())));
             } else  {
                 switch (chatStep) {
                     case ChatStates.COUNT_STEP:
@@ -78,20 +81,27 @@ public class MetricBot extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         } else if (update.hasMessage() && update.getMessage().hasText()) {
-
             Long chatId = update.getMessage().getChatId();
+
             SendMessage message = new SendMessage();
             String input = update.getMessage().getText();
-            switch (input) {
+            if (chatUserService.getChatUser(chatId) == null) {
+                input = Commands.START;
+            }
+            switch (input.toLowerCase()) {
                 case Commands.START:
-                    chatStateService.updateChatStep(0, chatId);
                     ChatUser chatUser = chatUserService.createOrReturnChatUser(chatId);
+                    chatStateService.updateChatStep(0, chatId);
                     if (chatUser.getYaToken() == null) {
                         message = chatStateService.updateStepAndGetMessage(ChatStates.TOKEN_STEP, chatId);
                         message.setText(message.getText() + "\n" + "Перейдите по ссылке " +
                             yandexMetricService.getTokenLink()
 
                         );
+                    } else {
+                        message = new SendMessage().setText("Токен уже существует").
+                            setChatId(chatId);
+                        message.setText(message.getText() + "\n " + getMainMenu(chatId).getText());
                     }
                     break;
                 case Commands.UPDATE_TOKEN:
@@ -117,9 +127,17 @@ public class MetricBot extends TelegramLongPollingBot {
                     chatStateService.updateChatStep(0, chatId);
                     message = metricService.getMetricList(chatId, Commands.EDIT_ONE_METRIC);
                     break;
+                case Commands.METRIC_STATS:
+                    chatStateService.updateChatStep(0, chatId);
+                    message = metricService.getMetricList(chatId, Commands.STAT_ONE_METRIC);
+                    break;
                 case Commands.DEALS:
                     chatStateService.updateChatStep(0, chatId);
                     message = metricService.getMetricList(chatId, Commands.DEALS_EDIT);
+                    break;
+                case Commands.MAIN:
+                    chatStateService.updateChatStep(0, chatId);
+                    message = getMainMenu(chatId);
                     break;
                 default:
                     int chatStep = chatStateService.getCurrentStep(chatId);
@@ -129,6 +147,7 @@ public class MetricBot extends TelegramLongPollingBot {
                         case ChatStates.TOKEN_STEP:
                             message = yandexMetricService.handleYandexToken(chatId,
                                                                             update.getMessage().getText());
+                            message.setText(message.getText() + "\n " + getMainMenu(chatId).getText());
                             break;
                         default:
                              message = metricService.handleInput(update.getMessage().getText(), chatId);
@@ -161,6 +180,21 @@ public class MetricBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage().
             setChatId(chatId)
             .setText("Введите команду");
+        return sendMessage;
+    }
+
+    public SendMessage getMainMenu(Long chatId) {
+        SendMessage sendMessage = new SendMessage().
+                                                       setChatId(chatId)
+                                                   .setText(Commands.ADD_METRIC + " добавить метику\n" +
+                                                                Commands.DEALS + " сделки\n" +
+                                                                Commands.METRIC_STATS +" получить статистику сейчас\n" +
+                                                                Commands.ADD_METRIC + " добавить метрику\n" +
+                                                                Commands.DELETE_METRIC + " удалить метрику\n" +
+                                                                Commands.METRIC_LIST + " список метрик\n" +
+                                                                Commands.EDIT_METRIC + " редактировать\n" +
+                                                                Commands.MAIN + " главное меню\n" +
+                                                                Commands.START + " редактировать");
         return sendMessage;
     }
 

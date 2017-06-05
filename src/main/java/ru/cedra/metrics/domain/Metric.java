@@ -13,7 +13,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +35,9 @@ public class Metric implements Serializable {
 
     @Column(name = "metric_name")
     private String countName;
+
+    @Column
+    private String campainIds;
 
     @Column
     private String goalId;
@@ -69,7 +73,7 @@ public class Metric implements Serializable {
     private Integer monthDeals;
 
     @Column
-    private Date reportFromDate;
+    private Timestamp reportFromDate;
 
 
     @JsonIgnore
@@ -232,7 +236,15 @@ public class Metric implements Serializable {
         return reportFromDate;
     }
 
-    public void setReportFromDate(Date reportFromDate) {
+    public void setReportFromDate(Timestamp reportFromDate) {
         this.reportFromDate = reportFromDate;
+    }
+
+    public String getCampainIds() {
+        return campainIds;
+    }
+
+    public void setCampainIds(String campainIds) {
+        this.campainIds = campainIds;
     }
 }

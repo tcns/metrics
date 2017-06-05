@@ -65,12 +65,12 @@ public class TaskUtil {
     private static Trigger getTrigger(Integer reportTime) {
         return triggerContext -> {
             Calendar nextExecutionTime =  new GregorianCalendar();
-            nextExecutionTime.setTime(new Date());
-            //nextExecutionTime.set(Calendar.HOUR, reportTime);
+            //nextExecutionTime.setTime(new Date());
+            //nextExecutionTime.set(Calendar.HOUR_OF_DAY, reportTime);
             //nextExecutionTime.set(Calendar.MINUTE, 0);
             //nextExecutionTime.add(Calendar.DAY_OF_YEAR, 1);
-            nextExecutionTime.setTimeZone(TimeZone.getTimeZone("UTC"));
-            nextExecutionTime.add(Calendar.SECOND, 30);
+            nextExecutionTime.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+            nextExecutionTime.add(Calendar.MINUTE, 20);
             return nextExecutionTime.getTime();
         };
     }

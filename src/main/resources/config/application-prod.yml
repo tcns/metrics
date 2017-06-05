@@ -116,3 +116,5 @@ jhipster:
 # ===================================================================
 
 application:
+        bot-token: 320152093:AAGOmz1GnJfE7pOpqO2BpnrpXw-5R6zvk0s
+        bot-username: MetricReportBot

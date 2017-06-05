@@ -29,6 +29,7 @@
       "gatling"
     ],
     "jhiPrefix": "jhi",
-    "enableTranslation": false
+    "enableTranslation": false,
+    "herokuAppName": "hidden-sea-88612"
   }
 }

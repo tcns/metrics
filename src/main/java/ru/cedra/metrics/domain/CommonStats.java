@@ -11,6 +11,7 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.sql.Timestamp;
 import java.util.Date;
 
 
@@ -28,7 +29,7 @@ public class CommonStats {
     private Long id;
 
     @Column(name = "date", nullable = false)
-    private Date date;
+    private Timestamp date;
 
     @Column
     private Integer visits;
@@ -67,7 +68,7 @@ public class CommonStats {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Timestamp date) {
         this.date = date;
     }
 
