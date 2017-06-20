@@ -25,12 +25,11 @@ public class ChatStates {
     public static final int AVG_CHECK_STEP = 7;
     public static final int SITE_CONVERSION_STEP = 8;
     public static final int CLICK_PRICE_STEP = 9;
-    public static final int ASK_TIME_STEP = 10;
-    public static final int REPORT_TIME_STEP = 11;
-    public static final int CAMPAIGNS_IDS = 12;
-    public static final int METRIC_COMPLETE = 13;
-    public static final int TOKEN_STEP = 14;
-    public static final int DEALS_EDIT = 15;
+    public static final int REPORT_TIME_STEP = 10;
+    public static final int CAMPAIGNS_IDS = 11;
+    public static final int METRIC_COMPLETE = 12;
+    public static final int TOKEN_STEP = 13;
+    public static final int DEALS_EDIT = 14;
 
     static {
         states.put(COUNT_STEP, "Выберете счетчик");
@@ -42,11 +41,10 @@ public class ChatStates {
         states.put(AVG_CHECK_STEP, "Средний чек");
         states.put(SITE_CONVERSION_STEP, "Предполагаемая конверсия сайта(%)");
         states.put(CLICK_PRICE_STEP, "Предполагаемая цена за клик");
-        states.put(ASK_TIME_STEP, "В какое время спросить про количество звонков (входящих) и сделок и заработок - укажите московское время в часах (н-р '22')");
         states.put(REPORT_TIME_STEP, "В какое время выводить показатели - укажите московское время в часах (н-р '22')");
         states.put(METRIC_COMPLETE, "Метрика сохранена!");
         states.put(TOKEN_STEP, "Введите код подтверждения яндекс метрики");
-        states.put(DEALS_EDIT, "Введите через пробел количество звонков и сделок");
+        states.put(DEALS_EDIT, "Введите через пробел количество звонков, сделок и сумму сделок");
         states.put(CAMPAIGNS_IDS, "Ввдеите идентификаторы кампаний в яндекс директе через пробел");
     }
 }

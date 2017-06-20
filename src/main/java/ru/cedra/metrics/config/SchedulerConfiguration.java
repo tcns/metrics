@@ -45,7 +45,6 @@ public class SchedulerConfiguration implements SchedulingConfigurer {
     @Autowired
     CommonStatsService commonStatsService;
 
-
     @Bean
     public TaskScheduler taskScheduler() {
         return new ConcurrentTaskScheduler();
@@ -58,8 +57,11 @@ public class SchedulerConfiguration implements SchedulingConfigurer {
         TaskScheduler taskScheduler = new ConcurrentTaskScheduler(localExecutor);
         taskRegistrar.setTaskScheduler(taskScheduler);
         for (Metric metric: metrics) {
-            TaskUtil.registerTask(commonStatsService,
-                                  metricBot, taskRegistrar.getScheduler(), metric);
+            TaskUtil.registerTask(metricBot, taskRegistrar.getScheduler(), metric, commonStatsService);
         }
+
+        taskRegistrar.addCronTask(() -> {
+            commonStatsService.deleteOldStats(61);
+        }, "0 0 12 1 * ?");
     }
 }

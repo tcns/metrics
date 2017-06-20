@@ -12,6 +12,7 @@ import ru.cedra.metrics.domain.ChatUser;
 import ru.cedra.metrics.domain.Commands;
 import ru.cedra.metrics.service.ChatUserService;
 import ru.cedra.metrics.service.UserService;
+import ru.cedra.metrics.service.metric.CommonStatsService;
 import ru.cedra.metrics.service.metric.YandexMetricService;
 
 
@@ -32,6 +33,8 @@ public class MetricBot extends TelegramLongPollingBot {
     ChatStateService chatStateService;
     @Autowired
     YandexMetricService yandexMetricService;
+    @Autowired
+    CommonStatsService commonStatsService;
 
 
     public void sendMessageExternal (SendMessage sendMessage) {
@@ -61,12 +64,14 @@ public class MetricBot extends TelegramLongPollingBot {
                 String signature = callbackData.substring(Commands.EDIT_ONE_PARAM.length());
                 String[] kv = signature.split("-");
                 message = metricService.initEdition(chatId, Integer.parseInt(kv[1]), kv[0]);
-            } else if (callbackData.startsWith(Commands.DEALS_EDIT)) {
-                message = metricService.editDeals(chatId,
-                                                  Long.parseLong(callbackData.substring(Commands.DEALS_EDIT.length())));
             } else if (callbackData.startsWith(Commands.STAT_ONE_METRIC)) {
                 message = metricService.getMetricReportNow(chatId,
                                                   Long.parseLong(callbackData.substring(Commands.STAT_ONE_METRIC.length())));
+            } else if (callbackData.startsWith(Commands.DEALS_EDIT)) {
+                message = commonStatsService.getDatesWithoutDeals(chatId,
+                                                           Long.parseLong(callbackData.substring(Commands.DEALS_EDIT.length())));
+            } else if (callbackData.startsWith(Commands.DEALS_DATE)) {
+                message = metricService.editDeals(chatId, callbackData.substring(Commands.DEALS_EDIT.length()));
             } else  {
                 switch (chatStep) {
                     case ChatStates.COUNT_STEP:

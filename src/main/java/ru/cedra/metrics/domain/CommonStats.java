@@ -49,6 +49,12 @@ public class CommonStats {
     @Column
     private Integer deals;
 
+    @Column
+    private Float income;
+
+    @Column
+    private Boolean dealsSet;
+
 
 
     @JsonIgnore
@@ -126,5 +132,21 @@ public class CommonStats {
 
     public void setDeals(Integer deals) {
         this.deals = deals;
+    }
+
+    public Float getIncome() {
+        return income;
+    }
+
+    public void setIncome(Float income) {
+        this.income = income;
+    }
+
+    public Boolean getDealsSet() {
+        return dealsSet;
+    }
+
+    public void setDealsSet(Boolean dealsSet) {
+        this.dealsSet = dealsSet;
     }
 }

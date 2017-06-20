@@ -9,6 +9,7 @@ import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons
     .InlineKeyboardButton;
+import ru.cedra.metrics.config.Constants;
 import ru.cedra.metrics.domain.ChatState;
 import ru.cedra.metrics.domain.ChatStates;
 import ru.cedra.metrics.domain.Commands;
@@ -21,12 +22,13 @@ import ru.cedra.metrics.service.metric.YandexMetricService;
 import ru.cedra.metrics.service.util.TaskUtil;
 import ru.metrika4j.entity.Counter;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class MetricService {
+
     @Autowired
     MetricRepository metricRepository;
 
@@ -101,10 +104,6 @@ public class MetricService {
         } else  if (chatState.getData().startsWith(Commands.DEALS_EDIT_FINAL)){
             isEdit = true;
             editType = Commands.DEALS_EDIT_FINAL;
-            try {
-                metricId = Long.parseLong(chatState.getData().substring(Commands.DEALS_EDIT_FINAL
-                                                                            .length()));
-            } catch (Exception ex){}
         } else {
             try {
                 metricId = Long.parseLong(chatState.getData());
@@ -124,15 +123,11 @@ public class MetricService {
                 case ChatStates.AVG_CHECK_STEP: metric.setAvgCheck(Float.parseFloat(input)); break;
                 case ChatStates.SITE_CONVERSION_STEP: metric.setSiteConversion(Float.parseFloat(input) / 100.0f); break;
                 case ChatStates.CLICK_PRICE_STEP: metric.setClickPrice(Float.parseFloat(input)); break;
-                case ChatStates.ASK_TIME_STEP:
-                    Integer time = Integer.parseInt(input);
-                    if (time < 0 || time > 23) throw  new Exception();
-                    metric.setAskTime(input);
-                    break;
                 case ChatStates.REPORT_TIME_STEP:
                     Integer timeReport = Integer.parseInt(input);
                     if (timeReport < 0 || timeReport > 23) throw  new Exception();
                     metric.setReportTime(input);
+                    metric.setAskTime(input);
                     break;
                 case  ChatStates.CAMPAIGNS_IDS:
                     String[] ids = input.split(" ");
@@ -142,12 +137,13 @@ public class MetricService {
                     metric.setCampainIds(input);
                     break;
                 case ChatStates.DEALS_EDIT:
-                    String[] callsAndDeals = input.split(" ");
-                    commonStatsService.updateTodayCallsAndDeals(
-                        Integer.parseInt(callsAndDeals[0]),
-                        Integer.parseInt(callsAndDeals[1]),
-                        metricId
-                    );
+                    String[] data = chatState.getData().substring(Commands.DEALS_EDIT_FINAL
+                                                                      .length()).split("_");
+                    metricId = Long.parseLong(data[1]);
+                    metric = metricRepository.findOne(metricId);
+                    LocalDate date = Constants.DATE_F.parse(data[0]).toInstant().atZone(
+                        ZoneId.of("+03:00")).toLocalDate();
+                    saveDeals(input, metricId, date);
                     break;
             }
         } catch (Exception ex) {
@@ -168,8 +164,8 @@ public class MetricService {
                 metric.getSaleConversion(),
                 metric.getSiteConversion()
             ));
-            TaskUtil.deleteTask(taskScheduler, metricId);
-            TaskUtil.registerTask(commonStatsService, metricBot, taskScheduler, metric);
+            TaskUtil.deleteTask(metricId);
+            TaskUtil.registerTask(metricBot, taskScheduler, metric, commonStatsService);
             sendMessage = new SendMessage().setText(ChatStates.states.get(ChatStates.METRIC_COMPLETE))
                 .setChatId(chatId);
             if (Commands.EDIT_ONE_PARAM_FINAL.equals(editType)) {
@@ -177,7 +173,7 @@ public class MetricService {
             }
         } else if (Commands.DEALS_EDIT_FINAL.equals(editType)) {
             chatStateService.updateChatStep(0, chatId);
-            sendMessage = new SendMessage().setText("Значения успешно обновлены!").setChatId(chatId);
+            sendMessage = getMetricReportNow(chatId, metricId);
         } else {
             sendMessage = chatStateService.updateStepAndGetMessage(chatStep + 1, chatId, metricId+"");
         }
@@ -187,6 +183,18 @@ public class MetricService {
 
 
     }
+
+    public void saveDeals(String input, Long metricId, LocalDate date) {
+        String[] callsAndDeals = input.split(" ");
+        commonStatsService.updateCallsAndDeals(
+            Integer.parseInt(callsAndDeals[0]),
+            Integer.parseInt(callsAndDeals[1]),
+            Float.parseFloat(callsAndDeals[2]),
+            metricId,
+            date
+        );
+    }
+
 
 
     public SendMessage getMetricDefinition (Long chatId, Long metricId) {
@@ -275,10 +283,9 @@ public class MetricService {
             .setReplyMarkup(getFieldKeyBoard(metricId));
     }
 
-    public SendMessage editDeals (Long chatId, Long metricId) {
+    public SendMessage editDeals (Long chatId, String input) {
         chatStateService.updateChatStep(ChatStates.DEALS_EDIT, chatId,
-                                        Commands.DEALS_EDIT_FINAL + metricId);
-
+                                        Commands.DEALS_EDIT_FINAL + input);
         return new SendMessage()
             .setChatId(chatId)
             .setText(ChatStates.states.get(ChatStates.DEALS_EDIT));
@@ -291,7 +298,7 @@ public class MetricService {
             name = metric.getName();
         } catch (Exception e){}
         metricRepository.delete(metricId);
-        TaskUtil.deleteTask(taskScheduler, metricId);
+        TaskUtil.deleteTask(metricId);
         return new SendMessage()
             .setChatId(chatId)
             .setText("Метрика " + name + " удалена" );

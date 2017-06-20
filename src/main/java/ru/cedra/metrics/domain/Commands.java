@@ -26,6 +26,8 @@ public class Commands {
 
     public static final String GET_METRIC = "/getmetric-";
 
+    public static final String DEALS_DATE = "/dealsdate-";
+
     public static final String DELETE_ONE_METRIC = "/deletemetric-";
 
     public static final String EDIT_ONE_METRIC = "/editmetric-";

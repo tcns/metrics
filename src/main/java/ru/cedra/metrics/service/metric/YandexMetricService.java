@@ -95,25 +95,15 @@ public class YandexMetricService {
 
     public void fillStats (Long chatId, CommonStats commonStats) {
         String token = getToken(chatId);
-        MetrikaApi api = ApiFactory.createMetrikaAPI(token, new JacksonMapper());
         Integer countId = 0;
         try {
             countId = Integer.parseInt(commonStats.getMetric().getCountName());
         } catch (Exception ex) {
         }
-
-        ReportBuilder builder = api.makeReportBuilder(Reports.trafficSummary, countId);
-        Report report = builder.withDateFrom(MetrikaDate.yesterday()).withDateTo(MetrikaDate.today()).build();
-        ReportItem[] items = report.getData();
-        if (items.length > 0) {
-            ReportItem item = items[0];
-            //commonStats.setDate(Timestamp.valueOf(LocalDate.parse(item.getString("date"), DateTimeFormatter.ofPattern("yyyyMMdd")).atStartOfDay()));
-            commonStats.setVisits(item.getInt("visitors"));
-        }
         fillDirectStats(chatId, commonStats);
 
-        String url = String.format(REPORT_PREFIX+"metrics=ym:s:goal%susers&id=%s&oauth_token=%s" +
-                                       "&date1=yesterday&date2=today",
+        String url = String.format(REPORT_PREFIX+"metrics=ym:s:goal%susers,ym:s:users&id=%s&oauth_token=%s" +
+                                       "&date1=today",
                                    commonStats.getMetric().getGoalId(),
                                    "" + countId,
                                    token);
@@ -133,8 +123,12 @@ public class YandexMetricService {
                         ArrayNode arrayNode = (ArrayNode) metrics;
                         if (arrayNode.size() > 0) {
                             commonStats.setGoalAchievements((int)metrics.get(0).asDouble());
+                            commonStats.setVisits((int)metrics.get(1).asDouble());
                         }
                     }
+                } else {
+                    commonStats.setGoalAchievements(0);
+                    commonStats.setVisits(0);
                 }
 
             }
