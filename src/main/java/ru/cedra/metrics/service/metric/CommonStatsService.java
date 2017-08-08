@@ -125,11 +125,7 @@ public class CommonStatsService {
         LocalDate from = today.minusDays(daysDiff);
 
 
-        CommonStats todayStats = getDayStats(metricId, java.sql.Date.valueOf(
-            today));
-        if (todayStats == null) {
-            todayStats = getAndSaveStats(metricId, today, true);
-        }
+        CommonStats todayStats = getAndSaveStats(metricId, today, true);
 
         Set<CommonStats> monthStats = commonStatsRepository
             .findByDateBetweenAndMetric_Id(java.sql.Date.valueOf(from),

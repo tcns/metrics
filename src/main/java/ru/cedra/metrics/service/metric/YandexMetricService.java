@@ -3,6 +3,7 @@ package ru.cedra.metrics.service.metric;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.google.common.collect.Lists;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Content;
@@ -87,10 +88,30 @@ public class YandexMetricService {
 
     public List<Counter> getCounts(Long chatId) {
         String token = getToken(chatId);
-        MetrikaApi api = ApiFactory.createMetrikaAPI(token, new JacksonMapper());
-        Counter[] counters = api.getCounters();
+        String url = String.format("https://api-metrika.yandex.ru/management/v1/counters?oauth_token=%s",
+                                   token);
+        List<Counter> counters = new ArrayList<>();
+        try {
+            String content = Request.Get(url).execute().returnContent().asString();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(content);
+            int count = jsonNode.get("rows").asInt();
+            if (count > 0) {
+                ArrayNode metricsArray = (ArrayNode) jsonNode.get("counters");
+                for (JsonNode node: metricsArray) {
+                    Counter counter = new Counter();
+                    counter.setName(node.get("name").asText());
+                    counter.setId(node.get("id").asInt());
+                    counters.add(counter);
+                }
 
-        return Lists.newArrayList(counters);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return counters;
     }
 
     public void fillStats (Long chatId, CommonStats commonStats) {
