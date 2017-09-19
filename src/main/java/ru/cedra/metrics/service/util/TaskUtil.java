@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -39,9 +40,10 @@ public class TaskUtil {
         if (metric.getReportTime() != null) {
             try {
                 Integer.parseInt(metric.getReportTime());
-                reports.put(metric.getId(), taskScheduler.schedule(
+                reports.put(metric.getId(), taskScheduler.scheduleAtFixedRate(
                     getRunnableQuestion(metricBot, metric, commonStatsService),
-                    getTrigger(Integer.parseInt(metric.getReportTime()))
+                    getDate(Integer.parseInt(metric.getReportTime())),
+                    TimeUnit.DAYS.toMillis(1)
                 ));
             } catch (Exception e) {
             }
@@ -49,19 +51,18 @@ public class TaskUtil {
 
     }
 
-    private static Trigger getTrigger(Integer reportTime) {
-        return triggerContext -> {
-            Calendar nextExecutionTime =  new GregorianCalendar();
-            nextExecutionTime.setTime(new Date());
-            nextExecutionTime.set(Calendar.HOUR_OF_DAY, reportTime);
-            nextExecutionTime.set(Calendar.MINUTE, 0);
-            nextExecutionTime.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
-            if (reportTime < LocalDateTime.now(ZoneId.of("+03:00")).getHour() + 1) {
-                nextExecutionTime.add(Calendar.DAY_OF_YEAR, 1);
-            }
-           // nextExecutionTime.add(Calendar.SECOND, 30);
-            return nextExecutionTime.getTime();
-        };
+    private static Date getDate(Integer reportTime) {
+        //int min = reportTime % 1100;
+        //int h = reportTime / 100;
+        Calendar nextExecutionTime =  new GregorianCalendar();
+        nextExecutionTime.setTime(new Date());
+        nextExecutionTime.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+        nextExecutionTime.set(Calendar.HOUR_OF_DAY, reportTime);
+        nextExecutionTime.set(Calendar.MINUTE, 0);
+        if (reportTime < LocalDateTime.now(ZoneId.of("+03:00")).getHour() + 1) {
+            nextExecutionTime.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        return nextExecutionTime.getTime();
     }
 
     private static Runnable getRunnableQuestion(MetricBot metricBot, Metric metric,

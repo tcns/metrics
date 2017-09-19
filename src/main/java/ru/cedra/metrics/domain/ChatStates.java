@@ -14,7 +14,7 @@ import java.util.Map;
 public class ChatStates {
     public static Map<Integer, String> states = new HashMap<>();
 
-    public static List<Integer> paramStates = Lists.newArrayList(2,3,4,5,6,7,8,9,10,11);
+
 
     public static final int COUNT_STEP = 1;
     public static final int NAME_STEP = 2;
@@ -30,6 +30,16 @@ public class ChatStates {
     public static final int METRIC_COMPLETE = 12;
     public static final int TOKEN_STEP = 13;
     public static final int DEALS_EDIT = 14;
+
+    public static List<Integer> paramStates = Lists.newArrayList(NAME_STEP,
+                                                                 GOAL_STEP,
+                                                                 INCOME_STEP,
+                                                                 RENT_STEP,
+                                                                 SALE_CONVERSION_STEP,
+                                                                 AVG_CHECK_STEP,
+                                                                 SITE_CONVERSION_STEP,
+                                                                 CLICK_PRICE_STEP,
+                                                                 CAMPAIGNS_IDS);
 
     static {
         states.put(COUNT_STEP, "Выберете счетчик");
