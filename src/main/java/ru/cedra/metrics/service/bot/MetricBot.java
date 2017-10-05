@@ -36,6 +36,9 @@ public class MetricBot extends TelegramLongPollingBot {
     @Autowired
     CommonStatsService commonStatsService;
 
+    public ApplicationProperties getApplicationProperties() {
+        return applicationProperties;
+    }
 
     public void sendMessageExternal (SendMessage sendMessage) {
         try {
@@ -75,8 +78,10 @@ public class MetricBot extends TelegramLongPollingBot {
             } else  {
                 switch (chatStep) {
                     case ChatStates.COUNT_STEP:
+                    case ChatStates.GOAL_STEP:
                         message = metricService.handleInput(callbackData, chatId);
                         break;
+
                 }
             }
 

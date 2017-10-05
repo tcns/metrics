@@ -7,20 +7,18 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons
-    .InlineKeyboardButton;
+import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.cedra.metrics.config.Constants;
 import ru.cedra.metrics.domain.ChatState;
 import ru.cedra.metrics.domain.ChatStates;
 import ru.cedra.metrics.domain.Commands;
-import ru.cedra.metrics.domain.CommonStats;
 import ru.cedra.metrics.domain.Metric;
 import ru.cedra.metrics.repository.MetricRepository;
 import ru.cedra.metrics.service.ChatUserService;
+import ru.cedra.metrics.service.dto.Counter;
 import ru.cedra.metrics.service.metric.CommonStatsService;
 import ru.cedra.metrics.service.metric.YandexMetricService;
 import ru.cedra.metrics.service.util.TaskUtil;
-import ru.metrika4j.entity.Counter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -28,7 +26,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -116,7 +113,9 @@ public class MetricService {
             switch (chatStep) {
                 case ChatStates.COUNT_STEP: metric.setCountName(input); break;
                 case ChatStates.NAME_STEP: metric.setName(input); break;
-                case ChatStates.GOAL_STEP: metric.setGoalId(input); break;
+                case ChatStates.GOAL_STEP:
+                    metric.setGoalId(input);
+                    break;
                 case ChatStates.INCOME_STEP: metric.setClearIncome(Integer.parseInt(input)); break;
                 case ChatStates.RENT_STEP: metric.setRent(Float.parseFloat(input) / 100.0f); break;
                 case ChatStates.SALE_CONVERSION_STEP: metric.setSaleConversion(Float.parseFloat(input) / 100.0f); break;
@@ -141,8 +140,7 @@ public class MetricService {
                                                                       .length()).split("_");
                     metricId = Long.parseLong(data[1]);
                     metric = metricRepository.findOne(metricId);
-                    LocalDate date = Constants.DATE_F.parse(data[0]).toInstant().atZone(
-                        ZoneId.of("+03:00")).toLocalDate();
+                    LocalDate date = Constants.DATE_F.parse(data[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                     saveDeals(input, metricId, date);
                     break;
             }
@@ -176,6 +174,10 @@ public class MetricService {
             sendMessage = getMetricReportNow(chatId, metricId);
         } else {
             sendMessage = chatStateService.updateStepAndGetMessage(chatStep + 1, chatId, metricId+"");
+            if (chatStep == ChatStates.GOAL_STEP - 1) {
+                sendMessage.setReplyMarkup(getKeyBoard(
+                    yandexMetricService.getGoals(chatId, metric.getCountName())));
+            }
         }
 
         metricRepository.save(metric);

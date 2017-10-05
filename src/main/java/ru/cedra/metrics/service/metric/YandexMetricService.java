@@ -3,12 +3,9 @@ package ru.cedra.metrics.service.metric;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.IntNode;
 import com.google.common.collect.Lists;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.fluent.Content;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
@@ -17,55 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import ru.cedra.metrics.config.ApplicationProperties;
-import ru.cedra.metrics.domain.ChatUser;
-import ru.cedra.metrics.domain.CommonStats;
-import ru.cedra.metrics.domain.DateRangeTypeEnum;
-import ru.cedra.metrics.domain.FieldEnum;
-import ru.cedra.metrics.domain.FilterItem;
-import ru.cedra.metrics.domain.FilterOperatorEnum;
-import ru.cedra.metrics.domain.FormatEnum;
-import ru.cedra.metrics.domain.Metric;
-import ru.cedra.metrics.domain.OrderBy;
-import ru.cedra.metrics.domain.ReportDefinition;
-import ru.cedra.metrics.domain.ReportTypeEnum;
-import ru.cedra.metrics.domain.SelectionCriteria;
-import ru.cedra.metrics.domain.User;
-import ru.cedra.metrics.domain.YesNoEnum;
-import ru.cedra.metrics.repository.ChatStateRepository;
-import ru.cedra.metrics.repository.CommonStatsRepository;
-import ru.cedra.metrics.repository.MetricRepository;
+import ru.cedra.metrics.domain.*;
 import ru.cedra.metrics.service.ChatUserService;
-import ru.cedra.metrics.service.MailService;
 import ru.cedra.metrics.service.bot.ChatStateService;
-import ru.cedra.metrics.service.bot.MetricService;
-import ru.metrika4j.ApiFactory;
-import ru.metrika4j.MetrikaApi;
-import ru.metrika4j.MetrikaDate;
-import ru.metrika4j.Report;
-import ru.metrika4j.ReportBuilder;
-import ru.metrika4j.ReportItem;
-import ru.metrika4j.Reports;
-import ru.metrika4j.entity.Counter;
-import ru.metrika4j.json.jackson.JacksonMapper;
-import springfox.documentation.spring.web.json.Json;
+import ru.cedra.metrics.service.dto.Counter;
 
-import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -112,6 +72,27 @@ public class YandexMetricService {
 
 
         return counters;
+    }
+
+    public List<Pair> getGoals(Long chatId, String counterId) {
+        String token = getToken(chatId);
+        String url = String.format(
+            "https://api-metrika.yandex.ru/management/v1/counter/%s/goals?oauth_token=%s",
+            counterId,
+            token);
+        List<Pair> goals = new ArrayList<>();
+        try {
+            String content = Request.Get(url).execute().returnContent().asString();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(content);
+            ArrayNode goalsArray = (ArrayNode)jsonNode.get("goals");
+            for (JsonNode node: goalsArray) {
+                goals.add(Pair.of(node.get("id").asInt(), node.get("name").asText()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return goals;
     }
 
     public void fillStats (Long chatId, CommonStats commonStats) {

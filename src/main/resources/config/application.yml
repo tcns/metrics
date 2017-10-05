@@ -125,3 +125,4 @@ jhipster:
 application:
     ya-client-id: 9650892c566a41808c08231a6625fd49
     ya-client-secret: 648be287ef17418c8aad156fbf865e38
+    timezone: "+03:00"

@@ -20,6 +20,8 @@ public class ApplicationProperties {
 
     private String yaClientSecret;
 
+    private String timezone;
+
     public String getBotToken() {
         return botToken;
     }
@@ -50,5 +52,13 @@ public class ApplicationProperties {
 
     public void setYaClientSecret(String yaClientSecret) {
         this.yaClientSecret = yaClientSecret;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 }

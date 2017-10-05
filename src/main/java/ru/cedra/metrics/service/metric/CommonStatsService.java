@@ -6,6 +6,7 @@ import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons
     .InlineKeyboardButton;
+import ru.cedra.metrics.config.ApplicationProperties;
 import ru.cedra.metrics.config.Constants;
 import ru.cedra.metrics.domain.Commands;
 import ru.cedra.metrics.domain.CommonStats;
@@ -45,6 +46,9 @@ public class CommonStatsService {
     @Autowired
     YandexMetricService yandexMetricService;
 
+    @Autowired
+    ApplicationProperties properties;
+
 
 
     public CommonStats getAndSaveStats(Long metricId, LocalDate date, boolean updateRemote) {
@@ -62,7 +66,7 @@ public class CommonStatsService {
             commonStats.setClickCost(0.0f);
             commonStats.setIncome(0.0f);
             commonStats.setBudget(0.0f);
-            commonStats.setDate(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+            commonStats.setDate(Timestamp.valueOf(LocalDate.now(ZoneId.of(properties.getTimezone())).atStartOfDay()));
             commonStats.setMetric(metric);
         }
         if (updateRemote) {
@@ -117,7 +121,7 @@ public class CommonStatsService {
     public String getReport (Long metricId) {
         Metric metric = metricRepository.findOne(metricId);
 
-        LocalDate today = LocalDate.now(ZoneId.of("+03:00"));
+        LocalDate today = LocalDate.now(ZoneId.of(properties.getTimezone()));
         LocalDate metricFromDate = metric.getReportFromDate().toInstant().atZone(
             ZoneId.systemDefault()).toLocalDate();
         long daysDiff = Math.min(30, Math.abs(ChronoUnit.DAYS.between(today, metricFromDate)));

@@ -42,7 +42,8 @@ public class TaskUtil {
                 Integer.parseInt(metric.getReportTime());
                 reports.put(metric.getId(), taskScheduler.scheduleAtFixedRate(
                     getRunnableQuestion(metricBot, metric, commonStatsService),
-                    getDate(Integer.parseInt(metric.getReportTime())),
+                    getDate(Integer.parseInt(metric.getReportTime()),
+                        metricBot.getApplicationProperties().getTimezone()),
                     TimeUnit.DAYS.toMillis(1)
                 ));
             } catch (Exception e) {
@@ -51,7 +52,7 @@ public class TaskUtil {
 
     }
 
-    private static Date getDate(Integer reportTime) {
+    private static Date getDate(Integer reportTime, String timezone) {
         //int min = reportTime % 1100;
         //int h = reportTime / 100;
         Calendar nextExecutionTime =  new GregorianCalendar();
@@ -59,7 +60,7 @@ public class TaskUtil {
         nextExecutionTime.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
         nextExecutionTime.set(Calendar.HOUR_OF_DAY, reportTime);
         nextExecutionTime.set(Calendar.MINUTE, 0);
-        if (reportTime < LocalDateTime.now(ZoneId.of("+03:00")).getHour() + 1) {
+        if (reportTime < LocalDateTime.now(ZoneId.of(timezone)).getHour() + 1) {
             nextExecutionTime.add(Calendar.DAY_OF_YEAR, 1);
         }
         return nextExecutionTime.getTime();
@@ -72,7 +73,9 @@ public class TaskUtil {
                 .setChatId(metric.getChatUser().getTelegramChatId())
                 .setText("Напоминание: пожалуйста, введите количество звонков и сделок " +
                              "для метрики " + metric.getName() + " командой " + Commands.DEALS);
-            commonStatsService.getAndSaveStats(metric.getId(), LocalDate.now(ZoneId.of("+03:00")), true);
+            commonStatsService.getAndSaveStats(metric.getId(), LocalDate.now(ZoneId.of(
+                metricBot.getApplicationProperties().getTimezone()
+            )), true);
             metricBot.sendMessageExternal(sendMessage);
         };
     }
