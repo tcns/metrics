@@ -162,12 +162,14 @@ public class MetricService {
                 metric.getSaleConversion(),
                 metric.getSiteConversion()
             ));
-            TaskUtil.deleteTask(metricId);
-            TaskUtil.registerTask(metricBot, taskScheduler, metric, commonStatsService);
+
             sendMessage = new SendMessage().setText(ChatStates.states.get(ChatStates.METRIC_COMPLETE))
                 .setChatId(chatId);
             if (Commands.EDIT_ONE_PARAM_FINAL.equals(editType)) {
                 sendMessage.setText("Значение успешно обновлено!");
+            } else {
+                TaskUtil.deleteTask(metricId);
+                TaskUtil.registerReportTask(metricBot, taskScheduler, metric, commonStatsService);
             }
         } else if (Commands.DEALS_EDIT_FINAL.equals(editType)) {
             chatStateService.updateChatStep(0, chatId);

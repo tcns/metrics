@@ -57,7 +57,8 @@ public class SchedulerConfiguration implements SchedulingConfigurer {
         TaskScheduler taskScheduler = new ConcurrentTaskScheduler(localExecutor);
         taskRegistrar.setTaskScheduler(taskScheduler);
         for (Metric metric: metrics) {
-            TaskUtil.registerTask(metricBot, taskRegistrar.getScheduler(), metric, commonStatsService);
+            TaskUtil.registerReportTask(metricBot, taskRegistrar.getScheduler(), metric, commonStatsService);
+            TaskUtil.registerFinalUpdateTask(metricBot, taskRegistrar.getScheduler(), metric, commonStatsService);
         }
 
         taskRegistrar.addCronTask(() -> {

@@ -17,6 +17,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +27,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class TaskUtil {
 
-    public static Map<Long, ScheduledFuture> reports = new HashMap<>();
+    public static Map<Long, ScheduledFuture> reports = new ConcurrentHashMap<>();
+    public static Map<Long, ScheduledFuture> updates = new ConcurrentHashMap<>();
 
     public static void deleteTask(Long metricId) {
         if (reports.get(metricId) != null) {
@@ -34,8 +36,13 @@ public class TaskUtil {
             reports.remove(metricId);
         }
 
+        if (updates.get(metricId) != null) {
+            updates.get(metricId).cancel(true);
+            updates.remove(metricId);
+        }
+
     }
-    public static void registerTask(MetricBot metricBot, TaskScheduler taskScheduler, Metric metric,
+    public static void registerReportTask(MetricBot metricBot, TaskScheduler taskScheduler, Metric metric,
                                     CommonStatsService commonStatsService) {
         if (metric.getReportTime() != null) {
             try {
@@ -50,6 +57,16 @@ public class TaskUtil {
             }
         }
 
+    }
+
+    public static void registerFinalUpdateTask (MetricBot metricBot, TaskScheduler taskScheduler, Metric metric,
+                                                CommonStatsService commonStatsService) {
+
+        updates.put(metric.getId(), taskScheduler.scheduleAtFixedRate(()->
+            commonStatsService.getAndSaveStats(metric.getId(), LocalDate.now(ZoneId.of(
+                metricBot.getApplicationProperties().getTimezone()
+            )), true), getDate(23, metricBot.getApplicationProperties().getTimezone()),
+                TimeUnit.DAYS.toMillis(1)));
     }
 
     private static Date getDate(Integer reportTime, String timezone) {
