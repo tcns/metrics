@@ -170,6 +170,7 @@ public class MetricService {
             } else {
                 TaskUtil.deleteTask(metricId);
                 TaskUtil.registerReportTask(metricBot, taskScheduler, metric, commonStatsService);
+                TaskUtil.registerFinalUpdateTask(metricBot, taskScheduler, metric, commonStatsService);
             }
         } else if (Commands.DEALS_EDIT_FINAL.equals(editType)) {
             chatStateService.updateChatStep(0, chatId);
